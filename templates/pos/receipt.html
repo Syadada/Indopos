@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Struk Pembayaran - {{ transaction.transaction_number }}</title>
+    <style>
+        @page {
+            margin: 0;
+            size: 80mm auto;
+        }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            color: #000;
+            background: #fff;
+            margin: 0;
+            padding: 16px 12px;
+            width: 76mm;
+            box-sizing: border-box;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .store-name {
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .store-sub {
+            font-size: 11px;
+            margin-top: 2px;
+        }
+        .divider {
+            border-top: 1px dashed #000;
+            margin: 8px 0;
+        }
+        .meta-table {
+            width: 100%;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+        .meta-table td {
+            padding: 1px 0;
+        }
+        .items-table {
+            width: 100%;
+            font-size: 12px;
+            border-collapse: collapse;
+        }
+        .items-table td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .totals-table {
+            width: 100%;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .totals-table td {
+            padding: 2px 0;
+        }
+        .grand-total {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            margin-top: 14px;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+        .print-btn-bar {
+            background: #f1f5f9;
+            padding: 8px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .btn-print {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="print-btn-bar no-print">
+        <button class="btn-print" onclick="window.print()">🖨️ Cetak Struk</button>
+    </div>
+
+    <div class="header">
+        <div class="store-name">{{ transaction.branch.name|default:"INDOPOS RETAIL" }}</div>
+        {% if transaction.branch.subtitle %}
+            <div class="store-sub">{{ transaction.branch.subtitle }}</div>
+        {% endif %}
+        <div class="store-sub">{{ transaction.branch.address|default:"Toko Kelontong & Sembako Modern" }}</div>
+        {% if transaction.branch.phone %}
+            <div class="store-sub">Telp: {{ transaction.branch.phone }}</div>
+        {% endif %}
+    </div>
+
+    <div class="divider"></div>
+
+    <table class="meta-table">
+        <tr>
+            <td>No. Nota:</td>
+            <td class="text-right"><strong>{{ transaction.transaction_number }}</strong></td>
+        </tr>
+        <tr>
+            <td>Tanggal:</td>
+            <td class="text-right">{{ transaction.created_at|date:"d/m/Y H:i" }}</td>
+        </tr>
+        <tr>
+            <td>Kasir:</td>
+            <td class="text-right">Kasir POS</td>
+        </tr>
+        <tr>
+            <td>Pelanggan:</td>
+            <td class="text-right">{{ transaction.customer_name|default:"Umum" }}</td>
+        </tr>
+    </table>
+
+    <div class="divider"></div>
+
+    <table class="items-table">
+        {% for item in transaction.items.all %}
+            <tr>
+                <td colspan="2"><strong>{{ item.product.name }}</strong></td>
+            </tr>
+            <tr>
+                <td style="color: #444;">
+                    {{ item.quantity }} {{ item.unit_name }} x {{ item.price_per_unit|floatformat:0 }}
+                </td>
+                <td class="text-right">
+                    Rp {{ item.subtotal|floatformat:0 }}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <div class="divider"></div>
+
+    <table class="totals-table">
+        <tr>
+            <td>Subtotal:</td>
+            <td class="text-right">Rp {{ transaction.total_amount|floatformat:0 }}</td>
+        </tr>
+        {% if transaction.discount_amount > 0 %}
+        <tr>
+            <td>Diskon:</td>
+            <td class="text-right">- Rp {{ transaction.discount_amount|floatformat:0 }}</td>
+        </tr>
+        {% endif %}
+        <tr class="grand-total">
+            <td>TOTAL:</td>
+            <td class="text-right">Rp {{ transaction.grand_total|floatformat:0 }}</td>
+        </tr>
+        <tr>
+            <td>Bayar ({{ transaction.payment_method }}):</td>
+            <td class="text-right">Rp {{ transaction.paid_amount|floatformat:0 }}</td>
+        </tr>
+        <tr>
+            <td>Kembali:</td>
+            <td class="text-right"><strong>Rp {{ transaction.change_amount|floatformat:0 }}</strong></td>
+        </tr>
+    </table>
+
+    <div class="divider"></div>
+
+    <div class="footer">
+        <div>*** TERIMA KASIH ***</div>
+        <div style="font-size: 10px; margin-top: 4px;">Barang yang sudah dibeli tidak dapat ditukar/dikembalikan</div>
+        <div style="font-size: 9px; margin-top: 6px; color: #666;">Powered by IndoPOS & DuckDB Engine</div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            // Auto trigger print dialog
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        });
+    </script>
+</body>
+</html>

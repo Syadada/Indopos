@@ -1,0 +1,46 @@
+# Logs & Caches
+*.log
+logs/
+storage/logs/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment & Local configs
+.env
+.env.backup
+.env.production
+.DS_Store
+Thumbs.db
+Homestead.json
+Homestead.yaml
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Local databases
+*.duckdb
+*.duckdb.wal
+db.sqlite3
+
+# Large archives & temporary zips
+*.zip
+
+# Public build assets
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+
+# IDE configs
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+.phpunit.result.cache
+.phpactor.json
