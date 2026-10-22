@@ -5,7 +5,7 @@ color 0B
 :MENU
 cls
 echo =======================================================================
-echo          INDOPOS - ALL-IN-ONE SMART SYSTEM LAUNCHER v2.1              
+echo          INDOPOS - ALL-IN-ONE SMART SYSTEM LAUNCHER v2.2              
 echo =======================================================================
 echo.
 echo  PILIH SISTEM YANG INGIN DIJALANKAN:
@@ -13,17 +13,19 @@ echo.
 echo  [1] Kasir POS & DuckDB Analytics (Python Django - Rekomendasi Utama)
 echo  [2] Dasbor Filament Admin (PHP Laravel)
 echo  [3] Uji Coba Virtual Barcode Scanner (Test Suite Hardware POS)
-echo  [4] Unduh & Pasang Python Resmi (Jika belum terpasang di laptop ini)
+echo  [4] Pasang Python Otomatis (Langsung 1-Klik tanpa buka web)
+echo  [5] Buka Situs Resmi Python di Browser (Manual)
 echo  [0] Keluar
 echo.
 echo =======================================================================
 set "PILIHAN="
-set /p PILIHAN="Ketik angka pilihan (1/2/3/4/0) lalu tekan ENTER: "
+set /p PILIHAN="Ketik angka pilihan (1/2/3/4/5/0) lalu tekan ENTER: "
 
 if "%PILIHAN%"=="1" goto MODE_PYTHON
 if "%PILIHAN%"=="2" goto MODE_LARAVEL
 if "%PILIHAN%"=="3" goto MODE_SCAN_TEST
-if "%PILIHAN%"=="4" goto DOWNLOAD_PYTHON
+if "%PILIHAN%"=="4" goto AUTO_INSTALL_PYTHON
+if "%PILIHAN%"=="5" goto DOWNLOAD_PYTHON
 if "%PILIHAN%"=="0" goto KELUAR
 
 echo.
@@ -94,13 +96,15 @@ if not defined PY_CMD (
     echo -------------------------------------------------------------------
     echo Fitur Kasir Barcode & DuckDB Analytics membutuhkan Python 3.10+.
     echo.
-    echo Apakah Anda ingin membuka browser untuk mengunduh Python sekarang?
-    echo  [1] Ya, buka halaman unduh resmi Python
-    echo  [2] Kembali ke menu utama
+    echo Pilihan Pemasangan:
+    echo  [1] Pasang Otomatis Sekarang (Download & install langsung tanpa buka web)
+    echo  [2] Buka Situs Resmi Python di Browser (Manual)
+    echo  [3] Kembali ke Menu Utama
     echo.
     set "PY_OPT="
-    set /p PY_OPT="Pilih (1/2): "
-    if "%PY_OPT%"=="1" goto DOWNLOAD_PYTHON
+    set /p PY_OPT="Pilih opsi (1/2/3): "
+    if "%PY_OPT%"=="1" goto AUTO_INSTALL_PYTHON
+    if "%PY_OPT%"=="2" goto DOWNLOAD_PYTHON
     goto MENU
 )
 
@@ -158,6 +162,66 @@ goto MENU
 
 
 REM =======================================================================
+REM MENU 4: PEMASANGAN PYTHON OTOMATIS (DIRECT SILENT INSTALL)
+REM =======================================================================
+:AUTO_INSTALL_PYTHON
+cls
+echo =======================================================================
+echo      PEMASANGAN PYTHON OTOMATIS (DIRECT 1-KLIK TANPA BUKA WEB)
+echo =======================================================================
+echo.
+echo [1/3] Menyiapkan installer resmi Python 3.11 64-bit...
+set "PY_INSTALLER=%TEMP%\python_installer_311.exe"
+
+REM Gunakan curl jika tersedia, atau powershell sebagai fallback
+where curl >nul 2>nul
+if %errorlevel% equ 0 (
+    echo [PROSES] Mengunduh Python langsung dari python.org via curl...
+    curl -# -L -o "%PY_INSTALLER%" https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe
+) else (
+    echo [PROSES] Mengunduh Python langsung via PowerShell...
+    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe', '%PY_INSTALLER%')"
+)
+
+if not exist "%PY_INSTALLER%" (
+    echo.
+    echo [ERROR] Gagal mengunduh installer Python!
+    echo Pastikan laptop terhubung ke internet.
+    pause
+    goto MENU
+)
+
+echo.
+echo [2/3] Memasang Python secara otomatis (Silent Install)...
+echo (Mohon tunggu sebentar, sistem sedang memasang Python dan konfigurasi PATH...)
+start /wait "" "%PY_INSTALLER%" /quiet InstallAllUsers=0 PrependPath=1 Include_pip=1 Include_test=0
+
+REM Bersihkan file installer sementara
+del /f /q "%PY_INSTALLER%" >nul 2>nul
+
+echo.
+echo [3/3] Memeriksa hasil instalasi...
+call :DETECT_PYTHON
+
+if defined PY_CMD (
+    echo.
+    echo =======================================================================
+    echo [SUKSES] Python berhasil dipasang dan siap digunakan!
+    echo =======================================================================
+    echo Menjalankan sistem Kasir POS & Analitik DuckDB secara otomatis...
+    timeout /t 3 >nul 2>nul
+    goto MODE_PYTHON
+) else (
+    echo [INFO] Python telah selesai dipasang ke sistem.
+    echo Silakan tutup jendela ini dan jalankan kembali JALANKAN_SISTEM.bat
+    echo agar perubahan PATH sistem Windows terbaca sepenuhnya.
+    echo.
+    pause
+    goto MENU
+)
+
+
+REM =======================================================================
 REM MENU 2: MODE LARAVEL FILAMENT
 REM =======================================================================
 :MODE_LARAVEL
@@ -198,7 +262,7 @@ if not defined PHP_BIN (
     echo -------------------------------------------------------------------
     echo Mode Laravel membutuhkan PHP 8.1+ atau XAMPP.
     echo Silakan install XAMPP dari https://www.apachefriends.org/
-    echo atau gunakan [Opsi 1] Mode Python DuckDB yang lebih praktis.
+    echo atau gunakan [Opsi 1] Mode Python DuckDB yang bisa diinstall otomatis.
     echo.
     pause
     goto MENU
@@ -269,7 +333,7 @@ goto MENU
 
 
 REM =======================================================================
-REM MENU 4: UNDUH PYTHON RESMI
+REM MENU 5: UNDUH PYTHON MANUAL LEWAT WEB
 REM =======================================================================
 :DOWNLOAD_PYTHON
 cls
