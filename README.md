@@ -9,7 +9,7 @@ Aplikasi POS (Kasir Barcode Retail) dan Manajemen Inventaris terintegrasi yang d
 ### Cara 1: Menggunakan File Batch Otomatis (Rekomendasi di Windows)
 Cukup klik ganda (double-click) file:
 ```cmd
-dashboard_python.bat
+JALANKAN_SISTEM.bat
 ```
 Skrip ini akan secara otomatis:
 1. Memeriksa ketersediaan lingkungan Python.
