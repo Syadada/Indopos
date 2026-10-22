@@ -75,17 +75,33 @@ WSGI_APPLICATION = 'indopos_project.wsgi.application'
 import os
 from pathlib import Path
 
-# Load settings or environment variables
-DB_ENGINE = os.environ.get('DB_CONNECTION', 'pgsql')
-if DB_ENGINE == 'pgsql' or DB_ENGINE == 'postgresql':
+import socket
+
+def _is_postgres_available(host, port):
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(0.4)
+        s.connect((host, int(port)))
+        s.close()
+        return True
+    except Exception:
+        return False
+
+# Load settings or environment variables with smart fallback
+_db_env = os.environ.get('DB_CONNECTION')
+_pg_host = os.environ.get('DB_HOST', '127.0.0.1')
+_pg_port = os.environ.get('DB_PORT', '5432')
+
+# Connect to Postgres if explicitly configured or port 5432 is running; otherwise fallback to offline SQLite
+if (_db_env in ('pgsql', 'postgresql') or _db_env is None) and _is_postgres_available(_pg_host, _pg_port):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.environ.get('DB_DATABASE', 'indopos'),
             'USER': os.environ.get('DB_USERNAME', 'rasyaad'),
             'PASSWORD': os.environ.get('DB_PASSWORD', 'Sellevolerei1'),
-            'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
+            'HOST': _pg_host,
+            'PORT': _pg_port,
         }
     }
 else:

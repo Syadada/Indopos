@@ -5,13 +5,13 @@ color 0B
 :MENU
 cls
 echo =======================================================================
-echo          INDOPOS - ALL-IN-ONE SMART SYSTEM LAUNCHER v2.2              
+echo          INDOPOS - ALL-IN-ONE SMART SYSTEM LAUNCHER v2.3              
 echo =======================================================================
 echo.
 echo  PILIH SISTEM YANG INGIN DIJALANKAN:
 echo.
-echo  [1] Kasir POS & DuckDB Analytics (Python Django - Rekomendasi Utama)
-echo  [2] Dasbor Filament Admin (PHP Laravel)
+echo  [1] Kasir POS & Dasbor Analitik DuckDB (Mode Python - Rekomendasi Utama)
+echo  [2] Dasbor Filament Admin (Mode PHP Laravel)
 echo  [3] Uji Coba Virtual Barcode Scanner (Test Suite Hardware POS)
 echo  [4] Pasang Python Otomatis (Langsung 1-Klik tanpa buka web)
 echo  [5] Buka Situs Resmi Python di Browser (Manual)
@@ -83,7 +83,7 @@ REM =======================================================================
 :MODE_PYTHON
 cls
 echo =======================================================================
-echo     MEMULAI SERVER KASIR POS & ANALITIK DUCKDB (OFFLINE MODE)
+echo     MEMULAI SERVER KASIR POS & DASBOR ANALITIK DUCKDB (OFFLINE MODE)
 echo =======================================================================
 echo.
 echo [1/4] Memeriksa Python di laptop ini...
@@ -141,22 +141,32 @@ if not exist "storage\logs" mkdir storage\logs 2>nul
 echo [OK] Basis data & DuckDB Engine siap digunakan offline.
 
 echo.
-echo [4/4] Meluncurkan server...
+echo [4/4] Meluncurkan server & membuka browser...
 echo =======================================================================
 echo  SISTEM INDOPOS 100%% OFFLINE AKTIF
-echo  - Kasir Barcode POS:        http://127.0.0.1:8000/
 echo  - Dasbor Analitik DuckDB:   http://127.0.0.1:8000/analytics/
+echo  - Kasir Barcode POS:        http://127.0.0.1:8000/
 echo  - Panel Manajemen Admin:    http://127.0.0.1:8000/admin/
 echo  - Kredensial Admin:         User: admin  ^|  Pass: 12345678
 echo =======================================================================
 echo.
-echo Membuka browser otomatis...
+
+echo Memulai Server IndoPOS di jendela latar belakang...
+start "IndoPOS Backend Server (127.0.0.1:8000)" %PY_CMD% manage.py runserver 127.0.0.1:8000
+
+echo Menunggu server aktif...
+timeout /t 3 >nul 2>nul
+
+echo Membuka Dasbor Analitik & Kasir POS di peramban otomatis...
+start http://127.0.0.1:8000/analytics/
 start http://127.0.0.1:8000/
 
-echo Memulai Server Django Development (Tekan Ctrl+C untuk berhenti)...
-%PY_CMD% manage.py runserver 127.0.0.1:8000
 echo.
-echo Server telah dihentikan.
+echo =======================================================================
+echo  [SUKSES] Server telah aktif dan Dasbor sudah terbuka di browser!
+echo  Untuk menghentikan server, cukup tutup jendela "IndoPOS Backend Server".
+echo =======================================================================
+echo.
 pause
 goto MENU
 
@@ -199,6 +209,12 @@ start /wait "" "%PY_INSTALLER%" /quiet InstallAllUsers=0 PrependPath=1 Include_p
 REM Bersihkan file installer sementara
 del /f /q "%PY_INSTALLER%" >nul 2>nul
 
+REM Langsung suntikkan path Python ke sesi CMD saat ini agar tidak perlu restart CMD
+set "PATH=%LOCALAPPDATA%\Programs\Python\Python311;%LOCALAPPDATA%\Programs\Python\Python311\Scripts;%PATH%"
+if exist "%LOCALAPPDATA%\Programs\Python\Python311\python.exe" (
+    set "PY_CMD=%LOCALAPPDATA%\Programs\Python\Python311\python.exe"
+)
+
 echo.
 echo [3/3] Memeriksa hasil instalasi...
 call :DETECT_PYTHON
@@ -209,7 +225,7 @@ if defined PY_CMD (
     echo [SUKSES] Python berhasil dipasang dan siap digunakan!
     echo =======================================================================
     echo Menjalankan sistem Kasir POS & Analitik DuckDB secara otomatis...
-    timeout /t 3 >nul 2>nul
+    timeout /t 2 >nul 2>nul
     goto MODE_PYTHON
 ) else (
     echo [INFO] Python telah selesai dipasang ke sistem.
@@ -297,13 +313,22 @@ echo [3/3] Meluncurkan Dasbor Admin Filament...
 echo =======================================================================
 echo    Dasbor Admin Aktif di: http://127.0.0.1:8000/admin
 echo =======================================================================
+
+echo Memulai Server Laravel di jendela latar belakang...
+start "IndoPOS Laravel Server (127.0.0.1:8000)" "%PHP_BIN%" artisan serve --port=8000
+
+echo Menunggu server aktif...
+timeout /t 3 >nul 2>nul
+
 echo Membuka browser...
 start http://127.0.0.1:8000/admin
 
-echo Menjalankan server Laravel (Tekan Ctrl+C untuk berhenti)...
-"%PHP_BIN%" artisan serve --port=8000
 echo.
-echo Server Laravel telah dihentikan.
+echo =======================================================================
+echo  [SUKSES] Server Laravel berjalan dan Dasbor Admin terbuka di browser!
+echo  Untuk menghentikan server, tutup jendela "IndoPOS Laravel Server".
+echo =======================================================================
+echo.
 pause
 goto MENU
 
