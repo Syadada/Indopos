@@ -82,7 +82,7 @@ def run_tests():
     print("\n[TEST 3] Simulasi Scan Barcode Tidak Dikenal...")
     res = client.post(
         '/api/pos/scan/',
-        data=json.dumps({'term': '9999999999999', 'branch_id': 1}),
+        data=json.dumps({'term': '0000000000000', 'branch_id': 1}),
         content_type='application/json'
     )
     data = res.json()

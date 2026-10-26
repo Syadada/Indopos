@@ -101,21 +101,21 @@ class BarcodeService:
                             full_name = f"{name} ({brand})" if brand else name
                             full_name = full_name[:250]
                         
-                        # Cache to BarcodeCatalog
-                        BarcodeCatalog.objects.get_or_create(
-                            barcode=code,
-                            defaults={'name': full_name, 'category': 'Online Auto-Fetch'}
-                        )
+                            # Cache to BarcodeCatalog
+                            BarcodeCatalog.objects.get_or_create(
+                                barcode=code,
+                                defaults={'name': full_name, 'category': 'Online Auto-Fetch'}
+                            )
 
-                        return {
-                            'found': True,
-                            'type': 'catalog_unregistered',
-                            'barcode': code,
-                            'name': full_name,
-                            'category': 'Online Auto-Fetch',
-                            'source': 'OpenFoodFacts API',
-                            'message': f"Barang terdeteksi dari Cloud: '{full_name}'. Silakan daftarkan harga jual di menu Produk."
-                        }
+                            return {
+                                'found': True,
+                                'type': 'catalog_unregistered',
+                                'barcode': code,
+                                'name': full_name,
+                                'category': 'Online Auto-Fetch',
+                                'source': 'OpenFoodFacts API',
+                                'message': f"Barang terdeteksi dari Cloud: '{full_name}'. Silakan daftarkan harga jual di menu Produk."
+                            }
             except Exception:
                 pass
 
