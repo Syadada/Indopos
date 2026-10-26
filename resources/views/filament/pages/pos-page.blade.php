@@ -94,7 +94,7 @@
                     <input type="text" wire:model.live.debounce.300ms="searchQuery" placeholder="Cari nama barang..." class="text-xs rounded-md border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-1.5 w-48">
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-44 overflow-y-auto pr-1">
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; max-height: 210px; overflow-y: auto;" class="pr-1">
                     @php
                         $productsQuery = \App\Models\Product::where('is_active', true)->with(['baseUnit', 'unitConversions.unit']);
                         if(!empty($searchQuery)) {
@@ -105,7 +105,7 @@
                                   ->orWhereRaw('LOWER(sku) LIKE ?', ['%' . $term . '%']);
                             });
                         }
-                        $products = $productsQuery->take(8)->get();
+                        $products = $productsQuery->take(12)->get();
                     @endphp
                     @foreach($products as $prod)
                         @php
@@ -114,11 +114,15 @@
                         @endphp
                         <button type="button" 
                                 wire:click="addToCart({{ $prod->id }})" 
-                                class="p-2.5 bg-gray-50 dark:bg-gray-700/50 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-gray-200 dark:border-gray-600 hover:border-emerald-500 rounded-lg text-left transition-all">
-                            <div class="text-xs font-bold text-gray-900 dark:text-gray-100 truncate">{{ $prod->name }}</div>
-                            <div class="flex items-center justify-between mt-1 text-[11px]">
-                                <span class="font-semibold text-emerald-600">Rp {{ number_format($prod->sell_price, 0, ',', '.') }}</span>
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ $stk <= 5 ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-200' }}">
+                                style="display: flex; flex-direction: column; justify-content: space-between; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; text-align: left; transition: all 0.15s ease; cursor: pointer; min-height: 62px;"
+                                onmouseover="this.style.borderColor='#10b981'; this.style.backgroundColor='#ecfdf5'; this.style.transform='translateY(-1px)';"
+                                onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.transform='none';">
+                            <div style="font-size: 12px; font-weight: 700; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 6px;" title="{{ $prod->name }}">
+                                {{ $prod->name }}
+                            </div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px;">
+                                <span style="font-weight: 800; color: #059669;">Rp {{ number_format($prod->sell_price, 0, ',', '.') }}</span>
+                                <span style="padding: 2px 7px; border-radius: 6px; font-size: 10px; font-weight: 700; background: {{ $stk <= 5 ? '#fee2e2; color: #b91c1c;' : '#e2e8f0; color: #334155;' }}">
                                     Stok: {{ $stk }}
                                 </span>
                             </div>
