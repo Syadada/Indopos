@@ -14,6 +14,10 @@ set COMPOSER_PHAR=C:\xampp\php\composer.phar
 REM 1. Check PHP Executable
 if exist "%PHP_EXE%" (
     echo [OK] Menggunakan PHP dari XAMPP: %PHP_EXE%
+    REM Auto-enable essential PHP extensions in XAMPP php.ini
+    if exist "C:\xampp\php\php.ini" (
+        powershell -NoProfile -Command "(Get-Content 'C:\xampp\php\php.ini') -replace ';extension=intl', 'extension=intl' -replace ';extension=zip', 'extension=zip' -replace ';extension=pdo_sqlite', 'extension=pdo_sqlite' -replace ';extension=sqlite3', 'extension=sqlite3' -replace ';extension=fileinfo', 'extension=fileinfo' | Set-Content -Encoding ASCII 'C:\xampp\php\php.ini'" >nul 2>&1
+    )
 ) else (
     where php >nul 2>&1
     if %errorlevel% equ 0 (
@@ -28,12 +32,12 @@ if exist "%PHP_EXE%" (
 )
 
 REM 2. Check & Install Dependencies (Fresh Installation Trigger)
-if not exist "vendor" (
-    echo [SETUP] Instalasi baru terdeteksi! Menginstall dependensi Composer...
+if not exist "vendor\autoload.php" (
+    echo [SETUP] Instalasi baru / belum lengkap terdeteksi! Menginstall dependensi Composer...
     if exist "%COMPOSER_PHAR%" (
-        "%PHP_EXE%" "%COMPOSER_PHAR%" install --no-interaction --prefer-dist
+        "%PHP_EXE%" "%COMPOSER_PHAR%" install --no-interaction --prefer-dist --ignore-platform-reqs
     ) else (
-        composer install --no-interaction --prefer-dist
+        composer install --no-interaction --prefer-dist --ignore-platform-reqs
     )
     echo [SETUP] Dependensi berhasil diinstall!
     echo.
