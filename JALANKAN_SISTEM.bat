@@ -48,7 +48,14 @@ if not exist ".env" (
     echo.
 )
 
-REM 4. Check Database Migrations
+REM 4. Ensure Essential Storage Directories
+if not exist "storage\logs" mkdir "storage\logs"
+if not exist "storage\framework\views" mkdir "storage\framework\views"
+if not exist "storage\framework\sessions" mkdir "storage\framework\sessions"
+if not exist "storage\framework\cache\data" mkdir "storage\framework\cache\data"
+if not exist "bootstrap\cache" mkdir "bootstrap\cache"
+
+REM 5. Check Database Migrations
 echo [SETUP] Menjalankan migrasi database...
 "%PHP_EXE%" artisan migrate --force
 

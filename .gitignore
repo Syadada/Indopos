@@ -1,7 +1,8 @@
 # Logs & Caches
 *.log
 logs/
-storage/logs/
+storage/logs/*.log
+!storage/logs/.gitignore
 __pycache__/
 *.py[cod]
 *$py.class
