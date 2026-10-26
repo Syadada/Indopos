@@ -30,15 +30,13 @@ class CustomLogin extends BaseLogin
     protected function getPasswordFormComponent(): Component
     {
         return TextInput::make('password')
-            ->label('Password (Hanya Angka)')
+            ->label('Password')
             ->password()
             ->revealable(filament()->arePasswordsRevealable())
             ->autocomplete('current-password')
             ->required()
-            ->rules(['regex:/^[0-9]+$/'])
             ->validationMessages([
                 'required' => 'Password wajib diisi.',
-                'regex' => '⚠️ Password hanya boleh berupa angka (0-9)!',
             ])
             ->extraInputAttributes(['tabindex' => 2]);
     }

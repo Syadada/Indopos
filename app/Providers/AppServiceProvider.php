@@ -26,7 +26,14 @@ class AppServiceProvider extends ServiceProvider
                 \Illuminate\Support\Facades\DB::connection('pgsql')->getPdo();
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Config::set('database.default', 'sqlite');
-                \Illuminate\Support\Facades\DB::purge('pgsql');
+                \Illuminate\Support\Facades\Config::set('database.connections.sqlite.database', database_path('database.sqlite'));
+                \Illuminate\Support\Facades\DB::purge();
+            }
+        } elseif (config('database.default') === 'sqlite') {
+            $sqlitePath = config('database.connections.sqlite.database');
+            if (!file_exists($sqlitePath) || is_dir($sqlitePath)) {
+                \Illuminate\Support\Facades\Config::set('database.connections.sqlite.database', database_path('database.sqlite'));
+                \Illuminate\Support\Facades\DB::purge();
             }
         }
 
