@@ -10,28 +10,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-tertiary: #334155;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
             --surface: #ffffff;
             --surface-muted: #f8fafc;
             --border: #e2e8f0;
-            --border-dark: #334155;
+            --border-dark: #cbd5e1;
             --text-main: #0f172a;
-            --text-muted: #64748b;
-            --text-white: #f8fafc;
-            --brand-primary: #4f46e5;
-            --brand-hover: #4338ca;
-            --brand-glow: rgba(79, 70, 229, 0.25);
-            --success: #10b981;
-            --success-glow: rgba(16, 185, 129, 0.25);
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --duckdb-color: #eab308;
+            --text-muted: #475569;
+            --text-white: #0f172a;
+            --brand-primary: #2563eb;
+            --brand-hover: #1d4ed8;
+            --brand-glow: rgba(37, 99, 235, 0.2);
+            --success: #16a34a;
+            --success-glow: rgba(22, 163, 74, 0.2);
+            --warning: #d97706;
+            --danger: #dc2626;
+            --duckdb-color: #2563eb;
             --radius-md: 12px;
             --radius-lg: 16px;
-            --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-            --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-float: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
         }
 
         * {
@@ -43,7 +43,7 @@
         }
 
         body {
-            background: #f1f5f9;
+            background: #f8fafc;
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
@@ -53,13 +53,14 @@
 
         /* TOP NAVIGATION */
         header.pos-header {
-            background: var(--bg-primary);
-            color: var(--text-white);
+            background: #ffffff;
+            color: #0f172a;
             padding: 12px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border-bottom: 1px solid #e2e8f0;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -72,7 +73,7 @@
         }
 
         .brand-logo {
-            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
             width: 40px;
             height: 40px;
             border-radius: 10px;
@@ -80,7 +81,8 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            color: #ffffff;
         }
 
         .brand-title {
@@ -90,12 +92,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: #0f172a;
         }
 
         .engine-badge {
-            background: rgba(234, 179, 8, 0.15);
-            border: 1px solid rgba(234, 179, 8, 0.4);
-            color: #facc15;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
             padding: 4px 10px;
             border-radius: 999px;
             font-size: 11px;
@@ -109,9 +112,9 @@
         .engine-dot {
             width: 7px;
             height: 7px;
-            background: #facc15;
+            background: #2563eb;
             border-radius: 50%;
-            box-shadow: 0 0 8px #facc15;
+            box-shadow: 0 0 8px #2563eb;
             animation: pulse 2s infinite;
         }
 
@@ -127,20 +130,26 @@
         }
 
         .branch-selector {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-dark);
-            color: white;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
             padding: 8px 14px;
             border-radius: 8px;
             font-size: 13px;
             font-weight: 600;
             outline: none;
             cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .branch-selector:focus {
+            border-color: #2563eb;
         }
 
         .nav-link-btn {
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
+            background: #ffffff;
+            color: #1e3a8a;
+            border: 1px solid #cbd5e1;
             text-decoration: none;
             padding: 8px 16px;
             border-radius: 8px;
@@ -150,20 +159,26 @@
             align-items: center;
             gap: 6px;
             transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
         }
 
         .nav-link-btn:hover {
-            background: rgba(255, 255, 255, 0.16);
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
             transform: translateY(-1px);
         }
 
         .nav-link-btn.btn-admin {
-            background: linear-gradient(135deg, #4f46e5, #4338ca);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         }
 
         .nav-link-btn.btn-admin:hover {
-            background: linear-gradient(135deg, #4338ca, #3730a3);
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            color: #ffffff;
         }
 
         /* MAIN LAYOUT */
