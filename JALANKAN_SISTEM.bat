@@ -1,41 +1,148 @@
 @echo off
-title IndoPOS - All-in-One Smart System Launcher
+title IndoPOS - 1-Click Smart Launcher
 color 0B
+setlocal enabledelayedexpansion
 
-:MENU
+REM =======================================================================
+REM INDOPOS 1-CLICK INSTANT LAUNCHER
+REM Otomatis: Cek/Pasang Python -> Cek/Pasang Library -> Migrasi -> Start Server -> Buka Browser
+REM =======================================================================
+
 cls
 echo =======================================================================
-echo          INDOPOS - ALL-IN-ONE SMART SYSTEM LAUNCHER v2.3              
+echo                 INDOPOS - 1-CLICK INSTANT LAUNCHER v3.0               
 echo =======================================================================
 echo.
-echo  PILIH SISTEM YANG INGIN DIJALANKAN:
+
+REM -----------------------------------------------------------------------
+REM LANGKAH 1: DETEKSI ATAU PASANG PYTHON OTOMATIS
+REM -----------------------------------------------------------------------
+echo [1/4] Memeriksa Python di komputer/laptop ini...
+call :DETECT_PYTHON
+
+if not defined PY_CMD (
+    echo.
+    echo [!] Python belum ditemukan. Memulai pemasangan Python otomatis...
+    call :AUTO_INSTALL_PYTHON
+    call :DETECT_PYTHON
+)
+
+if not defined PY_CMD (
+    echo.
+    echo [ERROR] Gagal mendeteksi Python setelah instalasi.
+    echo Silakan restart Command Prompt atau pasang Python manual dari python.org.
+    echo.
+    pause
+    exit /b 1
+)
+
+for /f "tokens=*" %%v in ('%PY_CMD% --version 2^>^&1') do set PY_VER=%%v
+echo [OK] %PY_VER% siap digunakan (%PY_CMD%).
+
+REM -----------------------------------------------------------------------
+REM LANGKAH 2: DETEKSI & PASANG DEPENDENSI (LIBRARY)
+REM -----------------------------------------------------------------------
 echo.
-echo  [1] Kasir POS & Dasbor Analitik DuckDB (Mode Python - Rekomendasi Utama)
-echo  [2] Dasbor Filament Admin (Mode PHP Laravel)
-echo  [3] Uji Coba Virtual Barcode Scanner (Test Suite Hardware POS)
-echo  [4] Pasang Python Otomatis (Langsung 1-Klik tanpa buka web)
-echo  [5] Buka Situs Resmi Python di Browser (Manual)
-echo  [0] Keluar
+echo [2/4] Memeriksa pustaka Python (Django, DuckDB, Pandas, Requests, dll)...
+%PY_CMD% -c "import django, duckdb, pandas, requests, openpyxl" >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [INFO] Menemukan pustaka yang belum lengkap.
+    echo [PROSES] Mengunduh dan memasang seluruh pustaka dari requirements.txt...
+    echo.
+    %PY_CMD% -m pip install --upgrade pip >nul 2>nul
+    %PY_CMD% -m pip install -r requirements.txt
+    if %errorlevel% neq 0 (
+        echo.
+        echo [ERROR] Gagal memasang beberapa pustaka Python.
+        echo Pastikan komputer terhubung ke internet saat instalasi pertama kali.
+        pause
+        exit /b 1
+    )
+    echo [SUKSES] Seluruh pustaka Python berhasil dipasang!
+) else (
+    echo [OK] Seluruh pustaka Python lengkap dan siap.
+)
+
+REM -----------------------------------------------------------------------
+REM LANGKAH 3: SETUP FOLDER, DATABASE & DUCKDB ANALYTICS
+REM -----------------------------------------------------------------------
+echo.
+echo [3/4] Menyiapkan basis data & engine DuckDB...
+if not exist "logs" mkdir logs
+if not exist "storage\logs" mkdir storage\logs 2>nul
+
+%PY_CMD% manage.py migrate --no-input >nul 2>nul
+%PY_CMD% manage.py init_duckdb >nul 2>nul
+echo [OK] Basis data produk (1071 item) & DuckDB Engine siap digunakan offline.
+
+REM -----------------------------------------------------------------------
+REM LANGKAH 4: JALANKAN SERVER & BUKA BROWSER OTOMATIS
+REM -----------------------------------------------------------------------
+echo.
+echo [4/4] Meluncurkan server latar belakang & membuka kasir di browser...
+start "IndoPOS Backend Server (127.0.0.1:8000)" %PY_CMD% manage.py runserver 127.0.0.1:8000
+
+echo Menunggu server aktif (3 detik)...
+timeout /t 3 >nul 2>nul
+
+echo Membuka aplikasi di peramban (browser)...
+start http://127.0.0.1:8000/
+start http://127.0.0.1:8000/analytics/
+
+:SERVER_RUNNING
+cls
+echo =======================================================================
+echo          [SUKSES] SISTEM INDOPOS SEDANG AKTIF & BERJALAN              
+echo =======================================================================
+echo.
+echo  Aplikasi dapat diakses di:
+echo  1. Kasir Barcode POS:        http://127.0.0.1:8000/
+echo  2. Dasbor Analitik DuckDB:   http://127.0.0.1:8000/analytics/
+echo  3. Panel Admin Toko:         http://127.0.0.1:8000/admin/
+echo     (Login: admin  ^|  Pass: 12345678)
 echo.
 echo =======================================================================
-set "PILIHAN="
-set /p PILIHAN="Ketik angka pilihan (1/2/3/4/5/0) lalu tekan ENTER: "
+echo  MENU PENGENDALIAN SISTEM (Ketik angka jika ingin aksi lain):
+echo =======================================================================
+echo  [1] Buka Ulang Halaman Kasir POS di Browser
+echo  [2] Buka Ulang Dasbor Analitik DuckDB di Browser
+echo  [3] Uji Coba Virtual Barcode Scanner (Hardware Test)
+echo  [4] Jalankan Dasbor Filament Admin (Mode PHP Laravel)
+echo  [0] Tutup dan Hentikan Server
+echo =======================================================================
+set "AKSI="
+set /p AKSI="Pilihan Anda [Tekan ENTER untuk biarkan tetap berjalan]: "
 
-if "%PILIHAN%"=="1" goto MODE_PYTHON
-if "%PILIHAN%"=="2" goto MODE_LARAVEL
-if "%PILIHAN%"=="3" goto MODE_SCAN_TEST
-if "%PILIHAN%"=="4" goto AUTO_INSTALL_PYTHON
-if "%PILIHAN%"=="5" goto DOWNLOAD_PYTHON
-if "%PILIHAN%"=="0" goto KELUAR
+if "%AKSI%"=="1" (
+    start http://127.0.0.1:8000/
+    goto SERVER_RUNNING
+)
+if "%AKSI%"=="2" (
+    start http://127.0.0.1:8000/analytics/
+    goto SERVER_RUNNING
+)
+if "%AKSI%"=="3" (
+    cls
+    echo =======================================================================
+    echo       UJI COBA OTOMATIS SCANNER BARCODE (VIRTUAL TEST SUITE)
+    echo =======================================================================
+    %PY_CMD% run_scan_test.py
+    pause
+    goto SERVER_RUNNING
+)
+if "%AKSI%"=="4" (
+    call :LAUNCH_LARAVEL
+    goto SERVER_RUNNING
+)
+if "%AKSI%"=="0" (
+    goto STOP_SERVER
+)
 
-echo.
-echo [!] Pilihan "%PILIHAN%" tidak valid.
-pause
-goto MENU
+goto SERVER_RUNNING
 
 
 REM =======================================================================
-REM DETEKSI PYTHON MANDIRI
+REM SUBROUTINE: DETEKSI PYTHON MANDIRI
 REM =======================================================================
 :DETECT_PYTHON
 set "PY_CMD="
@@ -78,316 +185,84 @@ goto :eof
 
 
 REM =======================================================================
-REM MENU 1: MODE PYTHON (KASIR POS & DUCKDB)
-REM =======================================================================
-:MODE_PYTHON
-cls
-echo =======================================================================
-echo     MEMULAI SERVER KASIR POS & DASBOR ANALITIK DUCKDB (OFFLINE MODE)
-echo =======================================================================
-echo.
-echo [1/4] Memeriksa Python di laptop ini...
-call :DETECT_PYTHON
-
-if not defined PY_CMD (
-    echo.
-    echo -------------------------------------------------------------------
-    echo [PERINGATAN] Python belum terpasang di laptop ini!
-    echo -------------------------------------------------------------------
-    echo Fitur Kasir Barcode & DuckDB Analytics membutuhkan Python 3.10+.
-    echo.
-    echo Pilihan Pemasangan:
-    echo  [1] Pasang Otomatis Sekarang (Download & install langsung tanpa buka web)
-    echo  [2] Buka Situs Resmi Python di Browser (Manual)
-    echo  [3] Kembali ke Menu Utama
-    echo.
-    set "PY_OPT="
-    set /p PY_OPT="Pilih opsi (1/2/3): "
-    if "%PY_OPT%"=="1" goto AUTO_INSTALL_PYTHON
-    if "%PY_OPT%"=="2" goto DOWNLOAD_PYTHON
-    goto MENU
-)
-
-for /f "tokens=*" %%v in ('%PY_CMD% --version 2^>^&1') do set PY_VER=%%v
-echo [OK] %PY_VER% terdeteksi.
-
-echo.
-echo [2/4] Memeriksa pustaka dependensi (requirements.txt)...
-%PY_CMD% -c "import django, duckdb, psycopg2, requests, pandas" >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [INFO] Terdeteksi pustaka yang belum lengkap di laptop ini.
-    echo [PROSES] Memasang pustaka otomatis dari requirements.txt...
-    echo.
-    %PY_CMD% -m pip install -r requirements.txt
-    if %errorlevel% neq 0 (
-        echo.
-        echo [ERROR] Gagal memasang beberapa pustaka Python.
-        echo Pastikan laptop terhubung ke internet saat instalasi awal.
-        pause
-        goto MENU
-    )
-    echo [SUKSES] Seluruh pustaka berhasil dipasang!
-) else (
-    echo [OK] Seluruh pustaka Python lengkap.
-)
-
-echo.
-echo [3/4] Menyiapkan folder audit log & inisialisasi basis data DuckDB...
-if not exist "logs" mkdir logs
-if not exist "storage\logs" mkdir storage\logs 2>nul
-
-%PY_CMD% manage.py migrate --no-input >nul 2>nul
-%PY_CMD% manage.py init_duckdb >nul 2>nul
-echo [OK] Basis data & DuckDB Engine siap digunakan offline.
-
-echo.
-echo [4/4] Meluncurkan server & membuka browser...
-echo =======================================================================
-echo  SISTEM INDOPOS 100%% OFFLINE AKTIF
-echo  - Dasbor Analitik DuckDB:   http://127.0.0.1:8000/analytics/
-echo  - Kasir Barcode POS:        http://127.0.0.1:8000/
-echo  - Panel Manajemen Admin:    http://127.0.0.1:8000/admin/
-echo  - Kredensial Admin:         User: admin  ^|  Pass: 12345678
-echo =======================================================================
-echo.
-
-echo Memulai Server IndoPOS di jendela latar belakang...
-start "IndoPOS Backend Server (127.0.0.1:8000)" %PY_CMD% manage.py runserver 127.0.0.1:8000
-
-echo Menunggu server aktif...
-timeout /t 3 >nul 2>nul
-
-echo Membuka Dasbor Analitik & Kasir POS di peramban otomatis...
-start http://127.0.0.1:8000/analytics/
-start http://127.0.0.1:8000/
-
-echo.
-echo =======================================================================
-echo  [SUKSES] Server telah aktif dan Dasbor sudah terbuka di browser!
-echo  Untuk menghentikan server, cukup tutup jendela "IndoPOS Backend Server".
-echo =======================================================================
-echo.
-pause
-goto MENU
-
-
-REM =======================================================================
-REM MENU 4: PEMASANGAN PYTHON OTOMATIS (DIRECT SILENT INSTALL)
+REM SUBROUTINE: PEMASANGAN PYTHON OTOMATIS (SILENT 1-KLIK)
 REM =======================================================================
 :AUTO_INSTALL_PYTHON
-cls
 echo =======================================================================
-echo      PEMASANGAN PYTHON OTOMATIS (DIRECT 1-KLIK TANPA BUKA WEB)
+echo          MENGUNDUH & MEMASANG PYTHON 3.11 OTOMATIS (SILENT)            
 echo =======================================================================
+echo Mohon tunggu sejenak, proses ini berjalan otomatis 1 kali saja...
 echo.
-echo [1/3] Menyiapkan installer resmi Python 3.11 64-bit...
+
 set "PY_INSTALLER=%TEMP%\python_installer_311.exe"
 
-REM Gunakan curl jika tersedia, atau powershell sebagai fallback
 where curl >nul 2>nul
 if %errorlevel% equ 0 (
-    echo [PROSES] Mengunduh Python langsung dari python.org via curl...
+    echo [PROSES] Mengunduh Python resmi via curl...
     curl -# -L -o "%PY_INSTALLER%" https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe
 ) else (
-    echo [PROSES] Mengunduh Python langsung via PowerShell...
+    echo [PROSES] Mengunduh Python resmi via PowerShell...
     powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe', '%PY_INSTALLER%')"
 )
 
 if not exist "%PY_INSTALLER%" (
-    echo.
-    echo [ERROR] Gagal mengunduh installer Python!
-    echo Pastikan laptop terhubung ke internet.
-    pause
-    goto MENU
+    echo [ERROR] Gagal mengunduh installer Python. Pastikan terhubung internet.
+    goto :eof
 )
 
-echo.
-echo [2/3] Memasang Python secara otomatis (Silent Install)...
-echo (Mohon tunggu sebentar, sistem sedang memasang Python dan konfigurasi PATH...)
+echo [PROSES] Memasang Python secara otomatis ke sistem...
 start /wait "" "%PY_INSTALLER%" /quiet InstallAllUsers=0 PrependPath=1 Include_pip=1 Include_test=0
-
-REM Bersihkan file installer sementara
 del /f /q "%PY_INSTALLER%" >nul 2>nul
 
-REM Langsung suntikkan path Python ke sesi CMD saat ini agar tidak perlu restart CMD
+REM Suntikkan path Python ke sesi CMD saat ini
 set "PATH=%LOCALAPPDATA%\Programs\Python\Python311;%LOCALAPPDATA%\Programs\Python\Python311\Scripts;%PATH%"
 if exist "%LOCALAPPDATA%\Programs\Python\Python311\python.exe" (
     set "PY_CMD=%LOCALAPPDATA%\Programs\Python\Python311\python.exe"
 )
-
-echo.
-echo [3/3] Memeriksa hasil instalasi...
-call :DETECT_PYTHON
-
-if defined PY_CMD (
-    echo.
-    echo =======================================================================
-    echo [SUKSES] Python berhasil dipasang dan siap digunakan!
-    echo =======================================================================
-    echo Menjalankan sistem Kasir POS & Analitik DuckDB secara otomatis...
-    timeout /t 2 >nul 2>nul
-    goto MODE_PYTHON
-) else (
-    echo [INFO] Python telah selesai dipasang ke sistem.
-    echo Silakan tutup jendela ini dan jalankan kembali JALANKAN_SISTEM.bat
-    echo agar perubahan PATH sistem Windows terbaca sepenuhnya.
-    echo.
-    pause
-    goto MENU
-)
+goto :eof
 
 
 REM =======================================================================
-REM MENU 2: MODE LARAVEL FILAMENT
+REM SUBROUTINE: DETEKSI & JALANKAN LARAVEL FILAMENT
 REM =======================================================================
-:MODE_LARAVEL
-cls
-echo =======================================================================
-echo            MEMULAI SERVER DASBOR FILAMENT ADMIN (LARAVEL)
-echo =======================================================================
-echo.
-echo [1/3] Memeriksa PHP / XAMPP di laptop ini...
+:LAUNCH_LARAVEL
 set "PHP_BIN="
-
-REM Cek php di PATH
 php -v >nul 2>nul
 if %errorlevel% equ 0 set "PHP_BIN=php"
 
-REM Cek lokasi umum XAMPP atau Laragon jika belum ketemu
 if not defined PHP_BIN (
     for %%X in (
         "C:\xampp\php\php.exe"
         "D:\xampp\php\php.exe"
-        "E:\xampp\php\php.exe"
         "C:\laragon\bin\php\php-8.2*\php.exe"
-        "C:\laragon\bin\php\php-8.1*\php.exe"
-        "C:\laragon\bin\php\php-8.3*\php.exe"
-        "C:\laragon\bin\php\php-8.0*\php.exe"
         "C:\php\php.exe"
     ) do (
-        if exist %%X (
-            set "PHP_BIN=%%~X"
-        )
+        if exist %%X set "PHP_BIN=%%~X"
     )
 )
 
 if not defined PHP_BIN (
-    echo.
-    echo -------------------------------------------------------------------
-    echo [PERINGATAN] PHP maupun XAMPP tidak ditemukan di laptop ini!
-    echo -------------------------------------------------------------------
-    echo Mode Laravel membutuhkan PHP 8.1+ atau XAMPP.
-    echo Silakan install XAMPP dari https://www.apachefriends.org/
-    echo atau gunakan [Opsi 1] Mode Python DuckDB yang bisa diinstall otomatis.
-    echo.
+    echo [PERINGATAN] PHP/XAMPP tidak ditemukan di komputer ini.
     pause
-    goto MENU
+    goto :eof
 )
 
-echo [OK] PHP terdeteksi: %PHP_BIN%
-
-echo.
-echo [2/3] Menyiapkan environment Laravel & migrasi database...
-if not exist ".env" (
-    echo [SETUP] Menyiapkan file konfigurasi .env...
-    if exist ".env.example" copy .env.example .env >nul
-    "%PHP_BIN%" artisan key:generate
-)
-
-if not exist "vendor" (
-    echo [PERINGATAN] Folder vendor belum ada.
-    where composer >nul 2>nul
-    if %errorlevel% equ 0 (
-        echo Menjalankan composer install...
-        composer install --no-interaction --prefer-dist
-    ) else (
-        echo [INFO] Pastikan folder vendor telah disalin jika tidak ada composer.
-    )
-)
-
+echo Menyiapkan Laravel di port 8080 (agar tidak bentrok dengan Kasir POS port 8000)...
 "%PHP_BIN%" artisan optimize:clear >nul 2>nul
-"%PHP_BIN%" artisan migrate --force >nul 2>nul
-
-echo.
-echo [3/3] Meluncurkan Dasbor Admin Filament...
-echo =======================================================================
-echo    Dasbor Admin Aktif di: http://127.0.0.1:8000/admin
-echo =======================================================================
-
-echo Memulai Server Laravel di jendela latar belakang...
-start "IndoPOS Laravel Server (127.0.0.1:8000)" "%PHP_BIN%" artisan serve --port=8000
-
-echo Menunggu server aktif...
+start "IndoPOS Laravel Server (127.0.0.1:8080)" "%PHP_BIN%" artisan serve --port=8080
 timeout /t 3 >nul 2>nul
-
-echo Membuka browser...
-start http://127.0.0.1:8000/admin
-
-echo.
-echo =======================================================================
-echo  [SUKSES] Server Laravel berjalan dan Dasbor Admin terbuka di browser!
-echo  Untuk menghentikan server, tutup jendela "IndoPOS Laravel Server".
-echo =======================================================================
-echo.
-pause
-goto MENU
+start http://127.0.0.1:8080/admin
+goto :eof
 
 
 REM =======================================================================
-REM MENU 3: UJI COBA SCANNER BARCODE VIRTUAL
+REM SUBROUTINE: HENTIKAN SERVER
 REM =======================================================================
-:MODE_SCAN_TEST
-cls
-echo =======================================================================
-echo       UJI COBA OTOMATIS SCANNER BARCODE (VIRTUAL TEST SUITE)
-echo =======================================================================
+:STOP_SERVER
 echo.
-call :DETECT_PYTHON
-if not defined PY_CMD (
-    echo [ERROR] Python dibutuhkan untuk menjalankan uji scanner barcode.
-    pause
-    goto MENU
-)
-
-echo Menjalankan simulasi scanner barcode dan verifikasi DuckDB...
-echo.
-%PY_CMD% run_scan_test.py
-echo.
-pause
-goto MENU
-
-
-REM =======================================================================
-REM MENU 5: UNDUH PYTHON MANUAL LEWAT WEB
-REM =======================================================================
-:DOWNLOAD_PYTHON
-cls
-echo =======================================================================
-echo              PANDUAN MENGUNDUH & MEMASANG PYTHON
-echo =======================================================================
-echo.
-echo Membuka peramban ke situs resmi Python (https://www.python.org/downloads/)...
-start https://www.python.org/downloads/
-echo.
-echo -------------------------------------------------------------------
-echo LANGKAH PENTING SAAT MEMASANG PYTHON DI WINDOWS:
-echo 1. Unduh installer Python (versi 3.10, 3.11, atau 3.12).
-echo 2. Buka file installer (.exe).
-echo 3. SANGAT PENTING: Pada tampilan paling bawah installer,
-echo    CENTANG KOTAK: [X] "Add python.exe to PATH"
-echo 4. Klik "Install Now" dan tunggu hingga selesai.
-echo 5. Buka kembali file batch ini!
-echo -------------------------------------------------------------------
-echo.
-pause
-goto MENU
-
-
-REM =======================================================================
-REM MENU 0: KELUAR
-REM =======================================================================
-:KELUAR
-cls
+echo Menghentikan server IndoPOS...
+taskkill /F /FI "WINDOWTITLE eq IndoPOS*" >nul 2>nul
+taskkill /F /IM python.exe /FI "MODULES eq *django*" >nul 2>nul
 echo Terima kasih telah menggunakan IndoPOS.
 timeout /t 2 >nul 2>nul
 exit /b 0
