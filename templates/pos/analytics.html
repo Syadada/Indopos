@@ -7,11 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8fafc;
-            --brand-primary: #2563eb;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --brand-primary: #4f46e5;
             --text-main: #0f172a;
-            --text-muted: #475569;
+            --text-muted: #64748b;
             --border: #e2e8f0;
             --radius-lg: 16px;
         }
@@ -30,14 +30,12 @@
         }
 
         header.pos-header {
-            background: #ffffff;
-            color: #0f172a;
+            background: var(--bg-primary);
+            color: white;
             padding: 14px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-            border-bottom: 1px solid #e2e8f0;
         }
 
         .header-brand {
@@ -47,7 +45,7 @@
         }
 
         .brand-logo {
-            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            background: linear-gradient(135deg, #eab308, #ca8a04);
             width: 40px;
             height: 40px;
             border-radius: 10px;
@@ -55,26 +53,16 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-            color: #ffffff;
         }
 
         .nav-link-btn {
-            background: #ffffff;
-            color: #1e3a8a;
-            border: 1px solid #cbd5e1;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
             text-decoration: none;
             padding: 8px 16px;
             border-radius: 8px;
             font-size: 13px;
             font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .nav-link-btn:hover {
-            background: #eff6ff;
-            color: #1d4ed8;
-            border-color: #bfdbfe;
         }
 
         .analytics-container {
@@ -84,16 +72,15 @@
         }
 
         .duckdb-banner {
-            background: #ffffff;
-            border: 1px solid #bfdbfe;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
             border-radius: var(--radius-lg);
             padding: 24px;
-            color: #0f172a;
+            color: white;
             margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06);
         }
 
         .engine-tag {

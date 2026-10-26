@@ -1,6 +1,6 @@
 @echo off
 title IndoPOS - 1-Click Smart Launcher
-color F0
+color 0B
 setlocal enabledelayedexpansion
 
 REM =======================================================================
