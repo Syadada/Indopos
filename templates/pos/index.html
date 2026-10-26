@@ -979,16 +979,47 @@
         let currentBranchId = parseInt("{{ selected_branch_id|default:'1' }}", 10) || 1;
         let cart = [];
         let activePaymentMethod = 'Cash';
+        let currentCatalog = [];
+        let alertTimeout = null;
+
+        // Utilities
+        function formatNumber(num) {
+            return Number(num || 0).toLocaleString('id-ID');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function showAlert(msg, type = 'info') {
+            const el = document.getElementById('scanAlert');
+            if (!el) return;
+            el.className = `scan-alert ${type}`;
+            el.innerHTML = msg;
+            el.style.display = 'flex';
+            if (alertTimeout) clearTimeout(alertTimeout);
+            alertTimeout = setTimeout(() => {
+                el.style.display = 'none';
+            }, 5000);
+        }
 
         // Load Catalog on Start
         document.addEventListener('DOMContentLoaded', () => {
             loadCatalog();
             const barcodeInp = document.getElementById('barcodeInput');
-            barcodeInp.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    triggerScan();
-                }
-            });
+            if (barcodeInp) {
+                barcodeInp.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        triggerScan();
+                    }
+                });
+            }
 
             // Keyboard shortcut F9 for checkout
             document.addEventListener('keydown', (e) => {
@@ -1010,23 +1041,26 @@
                 const data = await res.json();
                 renderCatalog(data.products || []);
             } catch (err) {
-                console.error(err);
+                console.error('Gagal memuat katalog:', err);
             }
         }
 
         function renderCatalog(products) {
+            currentCatalog = products || [];
             const grid = document.getElementById('productGrid');
-            document.getElementById('catalogCount').innerText = `(${products.length} barang)`;
-            if (products.length === 0) {
+            const countEl = document.getElementById('catalogCount');
+            if (countEl) countEl.innerText = `(${currentCatalog.length} barang)`;
+
+            if (currentCatalog.length === 0) {
                 grid.innerHTML = '<p style="color: #64748b; font-size: 13px;">Tidak ada produk tersedia.</p>';
                 return;
             }
 
-            grid.innerHTML = products.map(p => `
-                <div class="product-card" onclick="addToCartById(${p.id}, '${escapeHtml(p.name)}', ${p.sell_price}, '${p.unit_name}', '${p.barcode}')">
+            grid.innerHTML = currentCatalog.map((p, idx) => `
+                <div class="product-card" onclick="addToCartFromCatalog(${idx})">
                     <div>
                         <div class="product-name">${escapeHtml(p.name)}</div>
-                        <div class="product-meta">${p.barcode}</div>
+                        <div class="product-meta">${escapeHtml(p.barcode)}</div>
                     </div>
                     <div class="product-footer">
                         <span class="product-price">Rp ${formatNumber(p.sell_price)}</span>
@@ -1034,6 +1068,13 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        function addToCartFromCatalog(idx) {
+            const p = currentCatalog[idx];
+            if (!p) return;
+            addToCartById(p.id, p.name, p.sell_price, p.unit_name, p.barcode);
+            showAlert(`✅ Ditambahkan ke keranjang: ${escapeHtml(p.name)}`, 'info');
         }
 
         async function triggerScan() {

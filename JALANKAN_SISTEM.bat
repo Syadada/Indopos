@@ -67,20 +67,20 @@ REM -----------------------------------------------------------------------
 REM LANGKAH 3: SETUP FOLDER, DATABASE & DUCKDB ANALYTICS
 REM -----------------------------------------------------------------------
 echo.
-echo [3/4] Menyiapkan basis data & engine DuckDB...
+echo [3/4] Menyiapkan basis data dan engine DuckDB...
 if not exist "logs" mkdir logs
 if not exist "storage\logs" mkdir storage\logs 2>nul
 
 %PY_CMD% manage.py migrate --no-input >nul 2>nul
 if exist "fix_sqlite_pks.py" %PY_CMD% fix_sqlite_pks.py >nul 2>nul
 %PY_CMD% manage.py init_duckdb >nul 2>nul
-echo [OK] Basis data produk (1071 item) & DuckDB Engine siap digunakan offline.
+echo [OK] Basis data produk (1071 item) dan DuckDB Engine siap digunakan offline.
 
 REM -----------------------------------------------------------------------
 REM LANGKAH 4: JALANKAN SERVER & BUKA BROWSER OTOMATIS
 REM -----------------------------------------------------------------------
 echo.
-echo [4/4] Meluncurkan server latar belakang & membuka kasir di browser...
+echo [4/4] Meluncurkan server latar belakang dan membuka kasir di browser...
 start "IndoPOS Backend Server (127.0.0.1:8000)" %PY_CMD% manage.py runserver 127.0.0.1:8000
 
 echo Menunggu server aktif (3 detik)...
@@ -93,7 +93,7 @@ start http://127.0.0.1:8000/analytics/
 :SERVER_RUNNING
 cls
 echo =======================================================================
-echo          [SUKSES] SISTEM INDOPOS SEDANG AKTIF & BERJALAN              
+echo          [SUKSES] SISTEM INDOPOS SEDANG AKTIF DAN BERJALAN              
 echo =======================================================================
 echo.
 echo  Aplikasi dapat diakses di:
@@ -190,7 +190,7 @@ REM SUBROUTINE: PEMASANGAN PYTHON OTOMATIS (SILENT 1-KLIK)
 REM =======================================================================
 :AUTO_INSTALL_PYTHON
 echo =======================================================================
-echo          MENGUNDUH & MEMASANG PYTHON 3.11 OTOMATIS (SILENT)            
+echo          MENGUNDUH DAN MEMASANG PYTHON 3.11 OTOMATIS (SILENT)            
 echo =======================================================================
 echo Mohon tunggu sejenak, proses ini berjalan otomatis 1 kali saja...
 echo.
