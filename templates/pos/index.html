@@ -961,7 +961,7 @@
 
     <!-- POS JAVASCRIPT LOGIC -->
     <script>
-        let currentBranchId = {{ selected_branch_id }};
+        let currentBranchId = parseInt("{{ selected_branch_id|default:'1' }}", 10) || 1;
         let cart = [];
         let activePaymentMethod = 'Cash';
 
@@ -1256,6 +1256,13 @@
                 }
             } catch (err) {
                 alert('Kesalahan sistem: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '✅ Konfirmasi & Cetak Nota';
+            }
+        }
+    </script>
+
     <!-- CAMERA SCANNER MODAL -->
     <div id="cameraScannerModal" class="modal-overlay">
         <div class="modal-card" style="max-width: 480px; text-align: center;">
