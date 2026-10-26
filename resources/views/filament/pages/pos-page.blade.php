@@ -1,4 +1,33 @@
 <x-filament-panels::page>
+    <style>
+        .pos-grid-container {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) 390px !important;
+            gap: 20px !important;
+            align-items: start !important;
+            width: 100% !important;
+        }
+        .pos-btn-4cols {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 6px !important;
+            width: 100% !important;
+        }
+        .pos-cart-empty-svg {
+            width: 52px !important;
+            height: 52px !important;
+            max-width: 52px !important;
+            max-height: 52px !important;
+            margin: 0 auto 10px !important;
+            display: block !important;
+            color: #cbd5e1 !important;
+        }
+        @media (max-width: 1080px) {
+            .pos-grid-container {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
     <div x-data="{
             barcodeBuffer: '',
             lastKeyTime: 0,
@@ -42,10 +71,10 @@
         }" 
         @keydown.window="handleGlobalScanner($event)"
         x-on:open-print-window.window="window.open($event.detail.url, '_blank', 'width=450,height=650')" 
-        class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        class="pos-grid-container">
         
         <!-- LEFT & MIDDLE: SCANNER BARCODE & KERANJANG -->
-        <div class="lg:col-span-2 space-y-6">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
             
             <!-- BARCODE SCANNER & BRANCH SELECTOR CARD -->
             <div class="p-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -143,10 +172,10 @@
                 </div>
 
                 @if(count($cart) === 0)
-                    <div class="p-12 text-center text-gray-400">
-                        <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>
-                        <p class="mt-2 text-sm">Keranjang belanja masih kosong.</p>
-                        <p class="text-xs text-gray-400">Scan barcode atau klik item pada Quick Search di atas.</p>
+                    <div style="padding: 28px 16px; text-align: center;">
+                        <svg class="pos-cart-empty-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>
+                        <p style="font-size: 13px; font-weight: 700; color: #64748b; margin: 0;">Keranjang belanja masih kosong.</p>
+                        <p style="font-size: 11px; color: #94a3b8; margin: 4px 0 0;">Scan barcode atau klik item pada Quick Search di atas.</p>
                     </div>
                 @else
                     <div class="overflow-x-auto">
@@ -223,7 +252,7 @@
         </div>
 
         <!-- RIGHT: CHECKOUT & PAYMENT PANEL -->
-        <div class="space-y-6">
+        <div style="position: sticky; top: 20px; display: flex; flex-direction: column; gap: 20px;">
             <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
                 <h3 class="text-base font-bold text-gray-900 dark:text-gray-100 border-b pb-3 flex items-center justify-between">
                     <span>💳 Ringkasan Pembayaran</span>
@@ -288,7 +317,7 @@
                         <!-- SINGLE PAYMENT MODE -->
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Metode Pembayaran</label>
-                            <div class="grid grid-cols-4 gap-1">
+                            <div class="pos-btn-4cols">
                                 @foreach(['Cash', 'QRIS', 'Transfer', 'Debit'] as $method)
                                     <button type="button" 
                                             wire:click="$set('paymentMethod', '{{ $method }}')"
@@ -318,7 +347,7 @@
                         </div>
 
                         <!-- QUICK MONEY BUTTONS -->
-                        <div class="grid grid-cols-4 gap-1.5 text-center">
+                        <div class="pos-btn-4cols">
                             <button type="button" wire:click="$set('paidAmount', {{ $this->grandTotal }})" class="py-1.5 text-[11px] font-bold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded">Uang Pas</button>
                             <button type="button" wire:click="$set('paidAmount', 50000)" class="py-1.5 text-[11px] font-bold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded">50.000</button>
                             <button type="button" wire:click="$set('paidAmount', 100000)" class="py-1.5 text-[11px] font-bold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded">100.000</button>
