@@ -72,6 +72,7 @@ if not exist "logs" mkdir logs
 if not exist "storage\logs" mkdir storage\logs 2>nul
 
 %PY_CMD% manage.py migrate --no-input >nul 2>nul
+if exist "fix_sqlite_pks.py" %PY_CMD% fix_sqlite_pks.py >nul 2>nul
 %PY_CMD% manage.py init_duckdb >nul 2>nul
 echo [OK] Basis data produk (1071 item) & DuckDB Engine siap digunakan offline.
 
