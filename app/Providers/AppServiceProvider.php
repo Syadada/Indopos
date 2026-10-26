@@ -20,6 +20,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Auto-fallback to offline SQLite if PostgreSQL is unreachable (e.g. running on laptop sebelah without PG)
+        if (config('database.default') === 'pgsql') {
+            try {
+                \Illuminate\Support\Facades\DB::connection('pgsql')->getPdo();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Config::set('database.default', 'sqlite');
+                \Illuminate\Support\Facades\DB::purge('pgsql');
+            }
+        }
+
         Gate::before(function ($user, $ability) {
             return $user->hasRole('super_admin') ? true : null;
         });

@@ -1,5 +1,48 @@
 <x-filament-panels::page>
-    <div x-data x-on:open-print-window.window="window.open($event.detail.url, '_blank', 'width=450,height=650')" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div x-data="{
+            barcodeBuffer: '',
+            lastKeyTime: 0,
+            init() {
+                this.focusInput();
+                document.addEventListener('livewire:initialized', () => {
+                    Livewire.hook('commit', ({ succeed }) => {
+                        succeed(() => {
+                            setTimeout(() => this.focusInput(), 80);
+                        });
+                    });
+                });
+            },
+            focusInput() {
+                const el = document.getElementById('barcode-scanner-input');
+                if (el && document.activeElement !== el && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                    el.focus();
+                }
+            },
+            handleGlobalScanner(e) {
+                // Do not intercept if cashier is typing in another field (e.g. customer name or search)
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) && e.target.id !== 'barcode-scanner-input') {
+                    return;
+                }
+                const now = Date.now();
+                if (now - this.lastKeyTime > 200) {
+                    this.barcodeBuffer = '';
+                }
+                this.lastKeyTime = now;
+                if (e.key === 'Enter') {
+                    if (this.barcodeBuffer.length >= 3) {
+                        e.preventDefault();
+                        $wire.set('barcodeInput', this.barcodeBuffer);
+                        $wire.scanBarcode();
+                        this.barcodeBuffer = '';
+                    }
+                } else if (e.key.length === 1) {
+                    this.barcodeBuffer += e.key;
+                }
+            }
+        }" 
+        @keydown.window="handleGlobalScanner($event)"
+        x-on:open-print-window.window="window.open($event.detail.url, '_blank', 'width=450,height=650')" 
+        class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <!-- LEFT & MIDDLE: SCANNER BARCODE & KERANJANG -->
         <div class="lg:col-span-2 space-y-6">
@@ -19,6 +62,7 @@
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">⚡ Input / Scan Barcode Barang</label>
                     <div class="relative">
                         <input type="text" 
+                               id="barcode-scanner-input"
                                wire:model="barcodeInput"
                                wire:keydown.enter="scanBarcode"
                                placeholder="Ketik angka atau scan barcode di sini..." 
