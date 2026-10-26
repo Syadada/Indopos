@@ -8,28 +8,66 @@ echo          (Laravel 12 + Filament v3 POS System)
 echo ========================================================
 echo.
 
-set PHP_EXE=C:\xampp\php\php.exe
-set COMPOSER_PHAR=C:\xampp\php\composer.phar
+set PHP_EXE=
+set COMPOSER_PHAR=
 
-REM 1. Check PHP Executable
-if exist "%PHP_EXE%" (
-    echo [OK] Menggunakan PHP dari XAMPP: %PHP_EXE%
+REM 1. Check PHP Executable in priority order
+REM A. Check Local Portable PHP (./php/php.exe)
+if exist "%~dp0php\php.exe" (
+    set "PHP_EXE=%~dp0php\php.exe"
+    set "COMPOSER_PHAR=%~dp0php\composer.phar"
+    echo [OK] Menggunakan Local Portable PHP: !PHP_EXE!
+    goto :php_found
+)
+
+REM B. Check XAMPP PHP (C:\xampp\php\php.exe)
+if exist "C:\xampp\php\php.exe" (
+    set "PHP_EXE=C:\xampp\php\php.exe"
+    set "COMPOSER_PHAR=C:\xampp\php\composer.phar"
+    echo [OK] Menggunakan PHP dari XAMPP: C:\xampp\php\php.exe
     REM Auto-enable essential PHP extensions in XAMPP php.ini
     if exist "C:\xampp\php\php.ini" (
         powershell -NoProfile -Command "(Get-Content 'C:\xampp\php\php.ini') -replace ';extension=intl', 'extension=intl' -replace ';extension=zip', 'extension=zip' -replace ';extension=pdo_sqlite', 'extension=pdo_sqlite' -replace ';extension=sqlite3', 'extension=sqlite3' -replace ';extension=fileinfo', 'extension=fileinfo' | Set-Content -Encoding ASCII 'C:\xampp\php\php.ini'" >nul 2>&1
     )
-) else (
-    where php >nul 2>&1
-    if %errorlevel% equ 0 (
-        set PHP_EXE=php
-        echo [OK] Menggunakan PHP dari System PATH
-    ) else (
-        echo [ERROR] PHP executable tidak ditemukan di %PHP_EXE% maupun System PATH!
-        echo Pastikan XAMPP terinstall di C:\xampp atau PHP terdaftar di PATH.
-        pause
-        exit /b 1
-    )
+    goto :php_found
 )
+
+REM C. Check System PATH PHP
+where php >nul 2>&1
+if %errorlevel% equ 0 (
+    set "PHP_EXE=php"
+    echo [OK] Menggunakan PHP dari System PATH
+    goto :php_found
+)
+
+REM D. If no PHP is found on this remote / fresh machine:
+echo.
+echo ========================================================
+echo   [PERINGATAN] PHP belum terpasang di laptop ini!
+echo ========================================================
+echo Laptop ini tidak memiliki XAMPP atau PHP terinstall.
+echo.
+echo Apakah Anda ingin menginstall PHP otomatis via Windows Winget?
+echo (Ketik Y untuk install otomatis, atau N untuk keluar)
+set /p AUTO_INSTALL="Pilihan [Y/N]: "
+if /i "%AUTO_INSTALL%"=="Y" (
+    echo.
+    echo [SETUP] Menginstall PHP 8.2 via Windows Package Manager (winget)...
+    winget install PHP.PHP.8.2 --accept-package-agreements --accept-source-agreements --silent
+    set "PHP_EXE=php"
+    echo [OK] Instalasi PHP selesai! Silakan restart launcher jika perlu.
+    goto :php_found
+) else (
+    echo.
+    echo [TIPS] Anda juga bisa menyalin folder 'php' portable ke dalam folder aplikasi ini:
+    echo        %~dp0php\php.exe
+    echo.
+    pause
+    exit /b 1
+)
+
+:php_found
+
 
 REM 2. Check & Install Dependencies (Fresh Installation Trigger)
 if not exist "vendor\autoload.php" (
